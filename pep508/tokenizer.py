@@ -23,16 +23,56 @@ class Token:
         return f'{self.line}:{self.column}\t{self.name}\t{text}'
 
 
-
 DEFAULT_RULES = {
-    None: r' +|#[^\n]*',  # spaces and comments
-    'NEWLINE': r'\n+',
-    'IF': r'if\b',
-    'SQRT': r'sqrt\b',
-    'ERROR': r'error!',
-    'NAME': r'[a-zA-Z_]+[a-z0-9A-Z_]*',
-    'NUMBER': r'-?[0-9]+',
-    'OP': r'[():<>=*/+-]',
+    'WSP': r' +|\t+',  # spaces and comments
+    'LPAREN': r'\(',
+    'RPAREN': r'\)',
+    'DOT': r'\.',
+    'L_CURLY_BRACKET': r'{',
+    'R_CURLY_BRACKET': r'}',
+    'DASH': r'-',
+    'UNDERSCORE': r'_',
+    'STAR': r'\*',
+    'HASH': r'#',
+    'COLON': r':',
+    'SEMICOLON': r';',
+    'COMMA': r',',
+    'SLASH': r'/',
+    'QUESTION_MARK': r'\?',
+    'L_BRACKET': r'\[',
+    'R_BRACKET': r'\]',
+    'BACKTICK': r'`',
+    'AT': r'@',
+    'DOLLAR_SIGN': r'\$',
+    'PERCENTAGE_SIGN': r'%',
+    'CARET': r'\^',
+    'AMPERSAND': r'\&',
+    'PLUS_SIGN': r'\+',
+    'PIPE': r'\|',
+    'OP': r'===|==|~=|!=|<|>|<=|>=',
+    'LESS_THAN': r'<',
+    'GREATER_THAN': r'>',
+    'EQUAL_SIGN': r'\=',
+    'SQUOTE': r'\'',
+    'DQUOTE': r'\"',
+    'TILDE': r'~',
+    'EXCLAMATION_MARK': r'!',
+    'OR': r'or',
+    'AND': r'and',
+    'IN': r'in',
+    'NOT': r'not',
+    'ENV_VAR': r'python_version|python_full_version|os_name|sys_platform|platform_release|platform_system|platform_version|platform_machine|platform_python_implementation|implementation_name|implementation_version|extra|os\.name|sys\.platform|platform\.version|platform\.machine|platform\.python_implementation|python_implementation',
+    'LETTER': r'[a-zA-Z]',
+    'DIGIT': r'[0-9]',
+#
+#    None: r' +|#[^\n]*',  # spaces and comments
+#    'NEWLINE': r'\n+',
+#    'IF': r'if\b',
+#    'SQRT': r'sqrt\b',
+#    'ERROR': r'error!',
+#    'NAME': r'[a-zA-Z_]+[a-z0-9A-Z_]*',
+#    'NUMBER': r'-?[0-9]+',
+#    'OP': r'[():<>=*/+-]',
 }
 
 
@@ -45,7 +85,7 @@ class Tokenizer:
     Tokenizer objects are also iterable.
     """
 
-    def __init__(self, source, rules=DEFAULT_RULES):
+    def __init__(self, source, rules=DEFAULT_RULES, environment=None):
         self.source = source
         self.rules = dict(rules)
         self.next_token = None
@@ -54,6 +94,7 @@ class Tokenizer:
         self.line_number = 1
         self.column_number = 1
         self.lines = [''] + source.splitlines()
+        self.environment = environment
 
     def peek(self, *match_args, **match_kwargs):
         """Return the next token to be read"""

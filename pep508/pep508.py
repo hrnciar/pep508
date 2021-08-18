@@ -149,27 +149,12 @@ def parse_marker_var(tokens):
 
 
 def parse_env_var(tokens):
-    env_var = tokens.read('ENV_VAR').text
-    #TODO: replace . with _
-    if env_var == 'os_name' or env_var == 'os.name':
-        return tokens.environment['os_name']
-    elif env_var == 'sys_platform' or env_var == 'sys.platform':
-        return tokens.environment['sys_platform']
-    elif env_var == 'platform_machine' or env_var == 'platform.machine':
-        return tokens.environment['platform_machine']
-    elif env_var == 'platform_python_implementation' or env_var == 'platform.python_implementation' or env_var == 'python_implementation':
+    env_var = tokens.read('ENV_VAR').text.replace('.', '_')
+    if env_var == 'platform_python_implementation' or env_var == 'python_implementation':
         return tokens.environment['platform_python_implementation']
-    elif env_var == 'platform.release':
-        return tokens.environment['platform_release']
-    elif env_var == 'platform.system':
-        return tokens.environment['platform_system']
-    elif env_var == 'platform_version' or env_var == 'platform.version':
-        return tokens.environment['platform_version']
-    elif env_var == 'python_version':
-        return tokens.environment['python_version']
-    elif env_var == 'platform.python_version':
+    elif env_var == 'platform_python_version':
         return tokens.environment['python_full_version']
-    elif env_var == 'sys.implementation.name':
+    elif env_var == 'sys_implementation.name':
         return tokens.environment['implementation_name']
     elif env_var == 'extra':
         try:
@@ -178,7 +163,7 @@ def parse_env_var(tokens):
             from packaging.markers import UndefinedEnvironmentName
             raise UndefinedEnvironmentName()
     else:
-        return tokens.environment[tokens.read().text]
+        return tokens.environment[env_var]
 
 def parse_python_str(tokens):
     while tokens.try_read('WSP'):

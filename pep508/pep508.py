@@ -177,35 +177,10 @@ def parse_env_var(tokens):
 def parse_python_str(tokens):
     while tokens.try_read('WSP'):
         pass
-    s = ""
-    if tokens.try_read('SQUOTE'):
-        while True:
-            if tokens.try_read('DQUOTE'):
-                s += '"'
-            else:
-                s += parse_python_str_c(tokens)
-            if tokens.try_read('SQUOTE'):
-                # TODO: -> s
-                logging.debug(f'detected string: {s}')
-                return s
-    elif tokens.try_read('DQUOTE'):
-        while True:
-            if tokens.try_read('SQUOTE'):
-                s += '\''
-            else:
-                s += parse_python_str_c(tokens)
-            if tokens.try_read('DQUOTE'):
-                # TODO: -> s
-                logging.debug(f'detected string: {s}')
-                return s
+    if tokens.match('PYTHON_STR'):
+        return tokens.read().text.strip("\'\"")
     else:
         tokens.raise_syntax_error('python_str expected, should begin with single or double quote')
-
-def parse_python_str_c(tokens):
-    if tokens.match('WSP') or tokens.match('LETTER') or tokens.match('DIGIT') or tokens.match('LPAREN') or tokens.match('RPAREN') or tokens.match('DOT') or tokens.match('L_CURLY_BRACKET') or tokens.match('R_CURLY_BRACKET') or tokens.match('DASH') or tokens.match('UNDERSCORE') or tokens.match('STAR') or tokens.match('HASH') or tokens.match('COLON') or tokens.match('SEMICOLON') or tokens.match('COMMA') or tokens.match('SLASH') or tokens.match('QUESTION_MARK') or tokens.match('L_BRACKET') or tokens.match('R_BRACKET') or tokens.match('EXCLAMATION_MARK') or tokens.match('TILDE') or tokens.match('BACKTICK') or tokens.match('AT') or tokens.match('DOLLAR_SIGN') or tokens.match('PERCENTAGE_SIGN') or tokens.match('CARET') or tokens.match('AMPERSAND') or tokens.match('EQUAL_SIGN') or tokens.match('PLUS_SIGN') or tokens.match('PIPE') or tokens.match('LESS_THEN') or tokens.match('GREATER_THAN') or tokens.match('ENV_VAR') or tokens.match('OR') or tokens.match('AND') or tokens.match('IN') or tokens.match('NOT'):
-        return tokens.read().text
-    else:
-        tokens.raise_syntax_error()
 
 def parse_marker_op(tokens):
     while tokens.try_read('WSP'):

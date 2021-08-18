@@ -171,6 +171,12 @@ def parse_env_var(tokens):
         return tokens.environment['python_full_version']
     elif env_var == 'sys.implementation.name':
         return tokens.environment['implementation_name']
+    elif env_var == 'extra':
+        try:
+            return tokens.environment['extra']
+        except KeyError:
+            from packaging.markers import UndefinedEnvironmentName
+            raise UndefinedEnvironmentName()
     else:
         return tokens.environment[tokens.read().text]
 

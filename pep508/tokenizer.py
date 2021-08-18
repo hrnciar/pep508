@@ -132,7 +132,8 @@ class Tokenizer:
                     self._advance_position(token_text)
                     break
             else:
-                raise self.raise_syntax_error()
+                from packaging.markers import InvalidMarker
+                raise InvalidMarker()
         yield self._make_token('EOF', '')
 
     def _advance_position(self, token_text):

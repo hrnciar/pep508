@@ -29,7 +29,7 @@ DEFAULT_RULES = {
     'RPAREN': r'\)',
     'SEMICOLON': r';',
     'PYTHON_STR': r'(\'([\ a-zA-Z0-9\(\)\.{}\-_\*#:;,\/\?\[\]\!\~`@\$%\^\&\=\+\|<>\"])*\')|(\"([\ a-zA-Z0-9\(\)\.{}\-_\*#:;,\/\?\[\]\!\~`@\$%\^\&\=\+\|<>\'])*\")',
-    'OP': r'===|==|~=|!=|<|>|<=|>=',
+    'OP': r'===|==|~=|!=|<=|>=|<|>',
     'SQUOTE': r'\'',
     'DQUOTE': r'\"',
     'OR': r'or',
@@ -51,7 +51,7 @@ class Tokenizer:
     Tokenizer objects are also iterable.
     """
 
-    def __init__(self, source, rules=DEFAULT_RULES, environment=None):
+    def __init__(self, source, rules=DEFAULT_RULES):
         self.source = source
         self.rules = dict(rules)
         self.next_token = None
@@ -60,12 +60,11 @@ class Tokenizer:
         self.line_number = 1
         self.column_number = 1
         self.lines = [''] + source.splitlines()
-        self.environment = environment
+        #self.environment = environment
 
     def peek(self, *match_args, **match_kwargs):
         """Return the next token to be read"""
         if not self.next_token:
-            #print('READ',             self.next_token)
             self.next_token = next(self.generator)
         return self.next_token
 
@@ -85,6 +84,8 @@ class Tokenizer:
                 if v
             )
             raise self.raise_syntax_error(f'Expected {exp}')
+            #from packaging.markers import ParseException
+            #raise ParseException()
         return token
 
     def read(self, *match_args, **match_kwargs):
@@ -133,7 +134,7 @@ class Tokenizer:
                     break
             else:
                 from packaging.markers import InvalidMarker
-                raise InvalidMarker()
+                raise self.raise_syntax_error()
         yield self._make_token('EOF', '')
 
     def _advance_position(self, token_text):

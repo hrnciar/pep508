@@ -167,8 +167,7 @@ def parse_marker_op(tokens):
     else:
         # after marker_var must follow marker_op
         logging.debug('parse_marker_op detected syntax_error')
-        from packaging.markers import InvalidMarker
-        raise InvalidMarker('Failed to parse marker_op. Should be one of "<=, <, !=, ==, >=, >, ~=, ===, not, not in"')
+        tokens.raise_syntax_error('Failed to parse marker_op. Should be one of "<=, <, !=, ==, >=, >, ~=, ===, not, not in"')
 
 #node = parse_quoted_marker(tokens)
 #my_ast.dump(node)

@@ -105,12 +105,9 @@ class Tokenizer:
         if self.match(*match_args, **match_kwargs):
             return self.read()
 
-    def raise_syntax_error(self, message='Invalid syntax'):
-        """Raise SyntaxError at the given position in the file"""
-        at = f'at line {self.line_number}:'
-        line = self.lines[self.line_number]
-        marker = ' ' * self.column_number + '^'
-        raise SyntaxError(f'{message}\n{at}\n    {line}\n    {marker}')
+    def raise_syntax_error(self, message='Invalid marker'):
+        """Raise SyntaxError at the given position in the marker"""
+        raise SyntaxError(f'{message}', (None, self.column_number-1, None, None))
 
     def _make_token(self, name, text):
         """Make a token with the current line/column position"""

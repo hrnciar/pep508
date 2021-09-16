@@ -24,19 +24,18 @@ class Token:
 
 
 DEFAULT_RULES = {
-    'WSP': r' +|\t+',  # spaces and comments
+    None: r'[ \t]+',  # whitespace: not returned as tokens
     'LPAREN': r'\(',
     'RPAREN': r'\)',
     'SEMICOLON': r';',
-    'PYTHON_STR': r'(\'([\ a-zA-Z0-9\(\)\.{}\-_\*#:;,\/\?\[\]\!\~`@\$%\^\&\=\+\|<>\"])*\')|(\"([\ a-zA-Z0-9\(\)\.{}\-_\*#:;,\/\?\[\]\!\~`@\$%\^\&\=\+\|<>\'])*\")',
+    'QUOTED_STRING': r'(\'([\ a-zA-Z0-9\(\)\.{}\-_\*#:;,\/\?\[\]\!\~`@\$%\^\&\=\+\|<>\"])*\')|(\"([\ a-zA-Z0-9\(\)\.{}\-_\*#:;,\/\?\[\]\!\~`@\$%\^\&\=\+\|<>\'])*\")',
     'OP': r'===|==|~=|!=|<=|>=|<|>',
     'SQUOTE': r'\'',
     'DQUOTE': r'\"',
-    'OR': r'or',
-    'AND': r'and',
+    'BOOLOP': r'or|and',
     'IN': r'in',
     'NOT': r'not',
-    'ENV_VAR': r'python_version|python_full_version|os_name|sys_platform|platform_release|platform_system|platform_version|platform_machine|platform_python_implementation|implementation_name|implementation_version|extra|os\.name|sys\.platform|platform\.version|platform\.machine|platform\.python_implementation|python_implementation',
+    'VARIABLE': r'python_version|python_full_version|os_name|sys_platform|platform_release|platform_system|platform_version|platform_machine|platform_python_implementation|implementation_name|implementation_version|extra|os\.name|sys\.platform|platform\.version|platform\.machine|platform\.python_implementation|python_implementation',
 
 #    None: r' +|#[^\n]*',  # spaces and comments
 }

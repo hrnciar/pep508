@@ -8,7 +8,6 @@ from packaging.version import parse
 from packaging.markers import Variable, Value, Op
 
 from .tokenizer import Tokenizer
-from .my_ast import SimpleAssignment, String, BinOp
 
 import logging
 logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - %(message)s')
@@ -170,5 +169,4 @@ def parse_marker_op(tokens):
         tokens.raise_syntax_error('Failed to parse marker_op. Should be one of "<=, <, !=, ==, >=, >, ~=, ===, not, not in"')
 
 #node = parse_quoted_marker(tokens)
-#my_ast.dump(node)
 #print(node.eval({}))

@@ -43,52 +43,48 @@ def parse_quoted_marker(tokens):
     #TODO: consume everything until first ";"
     tokens.try_read('SEMICOLON')
     logging.debug('read ";", attempting to read marker')
-    return parse_marker_or(tokens)
-
-def parse_marker_or(tokens):
-    logging.debug('parse_marker_or left side')
-    marker_and_left = parse_marker_and(tokens)
-    if tokens.try_read('OR'):
-        marker_and_right = parse_marker_and(tokens)
-        return [marker_and_left, 'or', marker_and_right]
-    else:
-        logging.debug('parse_marker_or finished, returning left side')
-        return [marker_and_left]
-
-def parse_marker_and(tokens):
-    logging.debug(f'parse_marker_and left side')
-    marker_expr_left = parse_marker_expr(tokens)
-    logging.debug(f'parse_marker_and left side {marker_expr_left}')
-    # if next token is OR, we parsed left part of marker_or and we have to
-    # continue with parsing in parse_marker_or()
-    if tokens.match('OR'):
-        return marker_expr_left
-    if tokens.try_read('AND'):
-        logging.debug('parse_marker_and detected "and"')
-        marker_expr_right = parse_marker_expr(tokens)
-        logging.debug(f'parse_marker_and right side {marker_expr_right}')
-        logging.debug(('and', marker_expr_left, marker_expr_right))
-        return [marker_expr_left, 'and', marker_expr_right]
-    else:
-        logging.debug(f'parse_marker_and finished, returning left side {marker_expr_left}')
-        return [marker_expr_left]
+    return parse_marker_expr(tokens)
 
 def parse_marker_expr(tokens):
+    """
+    MARKER_EXPR: MARKER_ATOM (BOOLOP + MARKER_EXPR)+
+    """
+    logging.debug(f'parse_marker_and left side')
+    expression = [parse_marker_atom(tokens)]
+    logging.debug(f'parse_marker_and left side {expression}')
+    while tok := tokens.try_read('BOOLOP'):
+        logging.debug('parse_marker_and detected "and"')
+        expr_right = parse_marker_expr(tokens)
+        logging.debug(f'parse_marker_and right side {expr_right}')
+        expression.extend((tok.text, expr_right))
+    logging.debug(f'parse_marker_and finished, returning {expression}')
+    return expression
+
+def parse_marker_atom(tokens):
+    """
+    MARKER_ATOM: LPAREN MARKER_EXPR RPAREN | MARKER_ITEM
+    """
     if tokens.try_read('LPAREN'):
-        marker = parse_marker_or(tokens)
+        marker = parse_marker_expr(tokens)
         logging.debug(f'marker {marker}')
         if not tokens.try_read('RPAREN'):
             tokens.raise_syntax_error('missing closing right parenthesis')
         return marker
     else:
-        logging.debug('parse_marker_expr no other marker')
-        marker_var_left = parse_marker_var(tokens)
-        logging.debug(f'parse_marker_var left side {marker_var_left}')
-        marker_op = parse_marker_op(tokens)
-        logging.debug(f'parse_marker_var op {marker_op}')
-        marker_var_right = parse_marker_var(tokens)
-        logging.debug(f'parse_marker_var right side {marker_var_right}')
-        return (marker_var_left, marker_op, marker_var_right)
+        return parse_marker_item(tokens)
+
+def parse_marker_item(tokens):
+    """
+    MARKER_ITEM: MARKER_VAR MARKER_OP MARKER_VAR
+    """
+    logging.debug('parse_marker_expr no other marker')
+    marker_var_left = parse_marker_var(tokens)
+    logging.debug(f'parse_marker_var left side {marker_var_left}')
+    marker_op = parse_marker_op(tokens)
+    logging.debug(f'parse_marker_var op {marker_op}')
+    marker_var_right = parse_marker_var(tokens)
+    logging.debug(f'parse_marker_var right side {marker_var_right}')
+    return (marker_var_left, marker_op, marker_var_right)
 
 # TODO:
 #ops = {
@@ -98,17 +94,20 @@ def parse_marker_expr(tokens):
 # ops['<']('12', '34')
 
 def parse_marker_var(tokens):
-    if tokens.match('ENV_VAR'):
-        logging.debug('parse_marker_var detected ENV_VAR')
-        return parse_env_var(tokens)
+    """
+    MARKER_VAR: VARIABLE MARKER_VALUE
+    """
+    if tokens.match('VARIABLE'):
+        logging.debug('parse_marker_var detected VARIABLE')
+        return parse_variable(tokens)
     else:
         logging.debug('parse_marker_var detected python_str')
         return parse_python_str(tokens)
 
 
 
-def parse_env_var(tokens):
-    env_var = tokens.read('ENV_VAR').text.replace('.', '_')
+def parse_variable(tokens):
+    env_var = tokens.read('VARIABLE').text.replace('.', '_')
     if env_var == 'platform_python_implementation' or env_var == 'python_implementation':
         return Variable('platform_python_implementation')
         #return String(str(python_str))
@@ -126,7 +125,7 @@ def parse_env_var(tokens):
         return Variable(env_var)
 
 def parse_python_str(tokens):
-    if tokens.match('PYTHON_STR'):
+    if tokens.match('QUOTED_STRING'):
         python_str = tokens.read().text.strip("\'\"")
         return Value(str(python_str))
     else:

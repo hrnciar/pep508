@@ -24,7 +24,7 @@ class Token:
 
 
 DEFAULT_RULES = {
-    'WSP': r' +|\t+',  # spaces and comments
+    None: r'[ \t]+',  # whitespace: not returned as tokens
     'LPAREN': r'\(',
     'RPAREN': r'\)',
     'SEMICOLON': r';',

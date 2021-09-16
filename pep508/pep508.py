@@ -43,15 +43,11 @@ def parse_quoted_marker(tokens):
     #TODO: consume everything until first ";"
     tokens.try_read('SEMICOLON')
     logging.debug('read ";", attempting to read marker')
-    while tokens.try_read('WSP'):
-        pass
     return parse_marker_or(tokens)
 
 def parse_marker_or(tokens):
     logging.debug('parse_marker_or left side')
     marker_and_left = parse_marker_and(tokens)
-    while tokens.try_read('WSP'):
-        pass
     if tokens.try_read('OR'):
         marker_and_right = parse_marker_and(tokens)
         return [marker_and_left, 'or', marker_and_right]
@@ -63,8 +59,6 @@ def parse_marker_and(tokens):
     logging.debug(f'parse_marker_and left side')
     marker_expr_left = parse_marker_expr(tokens)
     logging.debug(f'parse_marker_and left side {marker_expr_left}')
-    while tokens.try_read('WSP'):
-        pass
     # if next token is OR, we parsed left part of marker_or and we have to
     # continue with parsing in parse_marker_or()
     if tokens.match('OR'):
@@ -80,8 +74,6 @@ def parse_marker_and(tokens):
         return [marker_expr_left]
 
 def parse_marker_expr(tokens):
-    while tokens.try_read('WSP'):
-        pass
     if tokens.try_read('LPAREN'):
         marker = parse_marker_or(tokens)
         logging.debug(f'marker {marker}')
@@ -106,8 +98,6 @@ def parse_marker_expr(tokens):
 # ops['<']('12', '34')
 
 def parse_marker_var(tokens):
-    while tokens.try_read('WSP'):
-        pass
     if tokens.match('ENV_VAR'):
         logging.debug('parse_marker_var detected ENV_VAR')
         return parse_env_var(tokens)
@@ -136,8 +126,6 @@ def parse_env_var(tokens):
         return Variable(env_var)
 
 def parse_python_str(tokens):
-    while tokens.try_read('WSP'):
-        pass
     if tokens.match('PYTHON_STR'):
         python_str = tokens.read().text.strip("\'\"")
         return Value(str(python_str))
@@ -145,19 +133,11 @@ def parse_python_str(tokens):
         tokens.raise_syntax_error('python_str expected, should begin with single or double quote')
 
 def parse_marker_op(tokens):
-    while tokens.try_read('WSP'):
-        pass
     if tokens.try_read('IN'):
         logging.debug('parse_marker_op detected "in"')
         return Op('in')
     elif tokens.try_read('NOT'):
-        tokens.expect('WSP')
-        while tokens.try_read('WSP'):
-            pass
-        tokens.expect('IN')
         tokens.read('IN')
-        while tokens.try_read('WSP'):
-            pass
         logging.debug('parse_marker_op detected "not in"')
         return Op('not in')
     elif tokens.match('OP'):

@@ -47,14 +47,14 @@ def parse_quoted_marker(tokens):
 
 def parse_marker_expr(tokens):
     """
-    MARKER_EXPR: MARKER_ATOM (BOOLOP + MARKER_EXPR)+
+    MARKER_EXPR: MARKER_ATOM (BOOLOP + MARKER_ATOM)+
     """
     logging.debug(f'parse_marker_and left side')
     expression = [parse_marker_atom(tokens)]
     logging.debug(f'parse_marker_and left side {expression}')
     while tok := tokens.try_read('BOOLOP'):
         logging.debug('parse_marker_and detected "and"')
-        expr_right = parse_marker_expr(tokens)
+        expr_right = parse_marker_atom(tokens)
         logging.debug(f'parse_marker_and right side {expr_right}')
         expression.extend((tok.text, expr_right))
     logging.debug(f'parse_marker_and finished, returning {expression}')

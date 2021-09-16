@@ -6,8 +6,7 @@ import re
 class Token:
     name: str
     text: str
-    line: int
-    column: int
+    position: int
 
     def matches(self, name=None, text=None):
         if name and self.name != name:
@@ -17,10 +16,14 @@ class Token:
         return True
 
     def __str__(self):
-        text = self.text
-        if self.matches('NEWLINE'):
-            text = text.replace('\n', '\\n')
-        return f'{self.line}:{self.column}\t{self.name}\t{text}'
+        return f'{self.position}\t{self.name}\t{self.text}'
+
+
+class PackagingSyntaxError(Exception):
+    """Parsing failed"""
+    def __init__(self, message, position):
+        super().__init__(message)
+        self.position = position
 
 
 DEFAULT_RULES = {
@@ -36,8 +39,6 @@ DEFAULT_RULES = {
     'IN': r'in',
     'NOT': r'not',
     'VARIABLE': r'python_version|python_full_version|os_name|sys_platform|platform_release|platform_system|platform_version|platform_machine|platform_python_implementation|implementation_name|implementation_version|extra|os\.name|sys\.platform|platform\.version|platform\.machine|platform\.python_implementation|python_implementation',
-
-#    None: r' +|#[^\n]*',  # spaces and comments
 }
 
 
@@ -52,14 +53,13 @@ class Tokenizer:
 
     def __init__(self, source, rules=DEFAULT_RULES):
         self.source = source
-        self.rules = dict(rules)
+        self.rules = {
+            name: re.compile(pattern)
+            for name, pattern in rules.items()
+        }
         self.next_token = None
         self.generator = self._tokenize()
-        # Info for nicer error messages:
-        self.line_number = 1
-        self.column_number = 1
-        self.lines = [''] + source.splitlines()
-        #self.environment = environment
+        self.position = 0
 
     def peek(self, *match_args, **match_kwargs):
         """Return the next token to be read"""
@@ -83,8 +83,6 @@ class Tokenizer:
                 if v
             )
             raise self.raise_syntax_error(f'Expected {exp}')
-            #from packaging.markers import ParseException
-            #raise ParseException()
         return token
 
     def read(self, *match_args, **match_kwargs):
@@ -106,39 +104,31 @@ class Tokenizer:
 
     def raise_syntax_error(self, message='Invalid marker'):
         """Raise SyntaxError at the given position in the marker"""
-        raise SyntaxError(f'{message}', (None, self.column_number-1, None, None))
+        at = f'at position {self.position}:'
+        marker = ' ' * self.position + '^'
+        raise PackagingSyntaxError(
+            f'{message}\n{at}\n    {self.source}\n    {marker}',
+            self.position,
+        )
 
     def _make_token(self, name, text):
-        """Make a token with the current line/column position"""
-        return Token(name, text, self.line_number, self.column_number)
+        """Make a token with the current position"""
+        return Token(name, text, self.position)
 
     def _tokenize(self):
         """The main generator of tokens"""
-        while self.source:
+        while self.position < len(self.source):
             for name, expression in self.rules.items():
-                if match := re.match(expression, self.source, re.MULTILINE):
+                if match := expression.match(self.source, self.position):
                     token_text = match[0]
-
-                    # The following line is inefficient for long programs;
-                    # it would be better (but more complex) to read the source
-                    # line by line
-                    self.source = self.source[len(token_text):]
 
                     if name:
                         yield self._make_token(name, token_text)
-                    self._advance_position(token_text)
+                    self.position += len(token_text)
                     break
             else:
-                from packaging.markers import InvalidMarker
                 raise self.raise_syntax_error()
         yield self._make_token('EOF', '')
-
-    def _advance_position(self, token_text):
-        """Advance the current line/column position"""
-        if '\n' in token_text:
-            self.line_number += token_text.count('\n')
-            self.column_number = 1
-        self.column_number += len(token_text.rpartition('\n')[-1])
 
     def __iter__(self):
         while True:
@@ -146,4 +136,3 @@ class Tokenizer:
             yield token
             if token.name == 'EOF':
                 break
-

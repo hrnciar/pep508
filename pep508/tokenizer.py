@@ -31,14 +31,34 @@ DEFAULT_RULES = {
     'LPAREN': r'\(',
     'RPAREN': r'\)',
     'SEMICOLON': r';',
-    'QUOTED_STRING': r'(\'([\ a-zA-Z0-9\(\)\.{}\-_\*#:;,\/\?\[\]\!\~`@\$%\^\&\=\+\|<>\"])*\')|(\"([\ a-zA-Z0-9\(\)\.{}\-_\*#:;,\/\?\[\]\!\~`@\$%\^\&\=\+\|<>\'])*\")',
+    'QUOTED_STRING': re.compile(
+        r'''
+            ('[^']*')
+            |
+            ("[^"]*")
+        ''',
+        re.VERBOSE
+    ),
     'OP': r'===|==|~=|!=|<=|>=|<|>',
     'SQUOTE': r'\'',
     'DQUOTE': r'\"',
     'BOOLOP': r'or|and',
     'IN': r'in',
     'NOT': r'not',
-    'VARIABLE': r'python_version|python_full_version|os_name|sys_platform|platform_release|platform_system|platform_version|platform_machine|platform_python_implementation|implementation_name|implementation_version|extra|os\.name|sys\.platform|platform\.version|platform\.machine|platform\.python_implementation|python_implementation',
+    'VARIABLE': re.compile(
+        r'''
+            python_version
+            |python_full_version
+            |os[._]name
+            |sys[._]platform
+            |platform_(release|system)
+            |platform[._](version|machine|python_implementation)
+            |python_implementation
+            |implementation_(name|version)
+            |extra
+        ''',
+        re.VERBOSE
+    ),
 }
 
 

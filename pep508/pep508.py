@@ -1,10 +1,6 @@
-import re
 import os
 import sys
 import platform
-import dataclasses
-#from operator import *
-from packaging.version import parse
 from packaging.markers import Variable, Value, Op
 
 from .tokenizer import Tokenizer
@@ -85,13 +81,6 @@ def parse_marker_item(tokens):
     marker_var_right = parse_marker_var(tokens)
     logging.debug(f'parse_marker_var right side {marker_var_right}')
     return (marker_var_left, marker_op, marker_var_right)
-
-# TODO:
-#ops = {
-#    '<': operator.lt,
-#    'in': operator.contains,
-#}
-# ops['<']('12', '34')
 
 def parse_marker_var(tokens):
     """

@@ -5,6 +5,6 @@
 #__all__ = ['parse_quoted_marker', 'Tokenizer']
 
 from pep508.pep508 import parse_quoted_marker
-from pep508.tokenizer import Tokenizer
+from pep508.tokenizer import Tokenizer, PackagingSyntaxError
 
-__all__ = ['parse_quoted_marker', 'Tokenizer', 'String', 'BinOp', 'SimpleAssignment']
+__all__ = ['parse_quoted_marker', 'Tokenizer', 'String', 'BinOp', 'SimpleAssignment', 'PackagingSyntaxError']

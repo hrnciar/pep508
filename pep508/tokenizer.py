@@ -148,11 +148,11 @@ class Tokenizer:
                     break
             else:
                 raise self.raise_syntax_error()
-        yield self._make_token('EOF', '')
+        yield self._make_token('stringEnd', '')
 
     def __iter__(self):
         while True:
             token = self.read()
             yield token
-            if token.name == 'EOF':
+            if token.name == 'stringEnd':
                 break
